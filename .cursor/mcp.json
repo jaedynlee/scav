@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "sudocode-mcp": {
+      "command": "sudocode-mcp"
+    }
+  }
+}
