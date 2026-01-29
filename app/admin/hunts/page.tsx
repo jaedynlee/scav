@@ -62,7 +62,7 @@ export default function HuntsPage() {
       ) : (
         <div className="grid gap-5">
           {hunts.map((hunt) => (
-            <Link key={hunt.id} href={`/admin/hunts/${hunt.id}`}>
+            <Link key={hunt.id} href={`/admin/hunts/edit?id=${hunt.id}`}>
               <Card className="hover:scale-[1.02] transition-transform cursor-pointer">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">

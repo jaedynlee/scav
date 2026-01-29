@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { huntDAO } from "@/lib/dao/hunt";
 import { clueDAO } from "@/lib/dao/clue";
 import { teamDAO } from "@/lib/dao/team";
@@ -12,10 +12,10 @@ import Textarea from "@/components/shared/Textarea";
 import Card from "@/components/shared/Card";
 import Link from "next/link";
 
-export default function HuntEditorPage() {
-  const params = useParams();
+function HuntEditorContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const huntId = params.id as string;
+  const huntId = searchParams.get("id");
 
   const [hunt, setHunt] = useState<Hunt | null>(null);
   const [clueSets, setClueSets] = useState<ClueSet[]>([]);
@@ -28,10 +28,12 @@ export default function HuntEditorPage() {
   const [status, setStatus] = useState<Hunt["status"]>("draft");
 
   useEffect(() => {
-    loadHunt();
+    if (huntId) loadHunt();
+    else setLoading(false);
   }, [huntId]);
 
   async function loadHunt() {
+    if (!huntId) return;
     try {
       const loadedHunt = await huntDAO.getHunt(huntId);
       if (!loadedHunt) {
@@ -55,7 +57,7 @@ export default function HuntEditorPage() {
   }
 
   async function handleSave() {
-    if (!hunt) return;
+    if (!hunt || !huntId) return;
 
     setSaving(true);
     setError("");
@@ -77,6 +79,7 @@ export default function HuntEditorPage() {
   }
 
   async function handleDelete() {
+    if (!huntId) return;
     if (!confirm("Are you sure you want to delete this hunt? This cannot be undone.")) {
       return;
     }
@@ -88,6 +91,17 @@ export default function HuntEditorPage() {
       setError("Failed to delete hunt");
       console.error(err);
     }
+  }
+
+  if (!huntId) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">Hunt ID is required</p>
+        <Link href="/admin/hunts">
+          <Button>Back to Hunts</Button>
+        </Link>
+      </div>
+    );
   }
 
   if (loading) {
@@ -175,7 +189,7 @@ export default function HuntEditorPage() {
       <Card>
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
-          <Link href={`/admin/hunts/${huntId}/teams`}>
+          <Link href={`/admin/hunts/teams?huntId=${huntId}`}>
             <Button>View</Button>
           </Link>
         </div>
@@ -198,7 +212,7 @@ export default function HuntEditorPage() {
             {clueSets.map((clueSet, index) => (
               <Link
                 key={clueSet.id}
-                href={`/admin/cluesets/${clueSet.id}`}
+                href={`/admin/cluesets/edit?id=${clueSet.id}`}
                 className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="flex justify-between items-center">
@@ -223,5 +237,17 @@ export default function HuntEditorPage() {
         Delete Hunt
       </Button>
     </div>
+  );
+}
+
+export default function HuntEditorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <HuntEditorContent />
+    </Suspense>
   );
 }

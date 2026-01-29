@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { teamDAO } from "@/lib/dao/team";
 import type { Team, TeamProgress, Hunt, ClueSet } from "@/lib/models/types";
 import Button from "@/components/shared/Button";
@@ -21,9 +21,9 @@ interface TeamWithProgress extends Team {
   timeSavedMinutes?: number;
 }
 
-export default function TeamManagementPage() {
-  const params = useParams();
-  const huntId = params.id as string;
+function TeamManagementContent() {
+  const searchParams = useSearchParams();
+  const huntId = searchParams.get("huntId");
 
   const [showJoinCode, setShowJoinCode] = useState(false);
   const [hunt, setHunt] = useState<Hunt | null>(null);
@@ -31,19 +31,13 @@ export default function TeamManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  console.log("teams page")
-
   useEffect(() => {
-    loadData();
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(() => {
-      loadTeams();
-    }, 30000);
-
-    return () => clearInterval(interval);
+    if (huntId) loadData();
+    else setLoading(false);
   }, [huntId]);
 
   async function loadData() {
+    if (!huntId) return;
     try {
       const loadedHunt = await huntDAO.getHunt(huntId);
       if (!loadedHunt) {
@@ -61,6 +55,7 @@ export default function TeamManagementPage() {
   }
 
   async function loadTeams() {
+    if (!huntId) return;
     try {
       const teamsWithProgress = await teamDAO.getTeamsWithProgress(huntId);
 
@@ -94,6 +89,17 @@ export default function TeamManagementPage() {
     }
   }
 
+  if (!huntId) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">Hunt ID is required</p>
+        <Link href="/admin/hunts">
+          <Button>Back to Hunts</Button>
+        </Link>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -122,7 +128,7 @@ export default function TeamManagementPage() {
       )}
 
       <div className="flex flex-col gap-4">
-        <Link href={`/admin/hunts/${huntId}`}>
+        <Link href={`/admin/hunts/edit?id=${huntId}`}>
           <button className="text-gray-600">
             ← Back to Hunt
           </button>
@@ -188,5 +194,17 @@ export default function TeamManagementPage() {
       {hunt.status !== "completed" && <CreateNewTeamCard huntId={huntId} callback={loadTeams} />}
 
     </div>
+  );
+}
+
+export default function TeamManagementPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <TeamManagementContent />
+    </Suspense>
   );
 }

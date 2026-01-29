@@ -32,7 +32,7 @@ export default function NewHuntPage() {
         description: description.trim() || undefined,
       });
 
-      router.push(`/admin/hunts/${hunt.id}`);
+      router.push(`/admin/hunts/edit?id=${hunt.id}`);
     } catch (err) {
       setError("Failed to create hunt. Please try again.");
       console.error(err);

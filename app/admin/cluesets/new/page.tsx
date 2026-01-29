@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Hunt } from "@/lib/models/types";
 import Button from "@/components/shared/Button";
@@ -9,7 +9,7 @@ import Card from "@/components/shared/Card";
 import { clueDAO } from "@/lib/dao/clue";
 import { huntDAO } from "@/lib/dao/hunt";
 
-export default function NewClueSetPage() {
+function NewClueSetContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const huntId = searchParams.get("huntId");
@@ -67,7 +67,7 @@ export default function NewClueSetPage() {
         clueIds: [],
       });
 
-      router.push(`/admin/cluesets/${clueSet.id}`);
+      router.push(`/admin/cluesets/edit?id=${clueSet.id}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create clueset";
       setError(errorMessage);
@@ -136,5 +136,17 @@ export default function NewClueSetPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function NewClueSetPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <NewClueSetContent />
+    </Suspense>
   );
 }

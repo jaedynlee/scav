@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { ClueSet, Clue, Hunt } from "@/lib/models/types";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
@@ -12,10 +12,10 @@ import { RoadBlockCard } from "@/components/clue/RoadBlockCard";
 import { clueDAO } from "@/lib/dao/clue";
 import { huntDAO } from "@/lib/dao/hunt";
 
-export default function ClueSetEditorPage() {
-  const params = useParams();
+function ClueSetEditorContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const clueSetId = params.id as string;
+  const clueSetId = searchParams.get("id");
 
   const [clueSet, setClueSet] = useState<ClueSet | null>(null);
   const [clues, setClues] = useState<Clue[]>([]);
@@ -26,10 +26,12 @@ export default function ClueSetEditorPage() {
   const [name, setName] = useState("");
 
   useEffect(() => {
-    loadClueSet();
+    if (clueSetId) loadClueSet();
+    else setLoading(false);
   }, [clueSetId]);
 
   async function loadClueSet() {
+    if (!clueSetId) return;
     try {
       const loadedClueSet = await clueDAO.getClueSet(clueSetId);
       if (!loadedClueSet) {
@@ -93,11 +95,22 @@ export default function ClueSetEditorPage() {
       // Delete clueset
       await clueDAO.deleteClueSet(clueSet.id);
 
-      router.push(`/admin/hunts/${hunt.id}`);
+      router.push(`/admin/hunts/edit?id=${hunt.id}`);
     } catch (err) {
       setError("Failed to delete clueset");
       console.error(err);
     }
+  }
+
+  if (!clueSetId) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">Clue set ID is required</p>
+        <Link href="/admin/hunts">
+          <Button>Back to Hunts</Button>
+        </Link>
+      </div>
+    );
   }
 
   if (loading) {
@@ -121,7 +134,7 @@ export default function ClueSetEditorPage() {
 
   return (
     <div className="space-y-6">
-      <Link href={`/admin/hunts/${hunt.id}`}>
+      <Link href={`/admin/hunts/edit?id=${hunt.id}`}>
         <button className="text-gray-600 pb-4">
           ← Back to {hunt.name}
         </button>
@@ -178,7 +191,7 @@ export default function ClueSetEditorPage() {
                         .map((clue, index) => (
                           <Link
                             key={clue.id}
-                            href={`/admin/clues/${clue.id}`}
+                            href={`/admin/clues/edit?id=${clue.id}`}
                             className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                           >
                             <div className="flex justify-between items-center">
@@ -206,7 +219,7 @@ export default function ClueSetEditorPage() {
                       {expressPasses.map((clue) => (
                         <Link
                           key={clue.id}
-                          href={`/admin/clues/${clue.id}`}
+                          href={`/admin/clues/edit?id=${clue.id}`}
                         >
                           <ExpressPassCard clue={clue} />
                         </Link>
@@ -218,7 +231,7 @@ export default function ClueSetEditorPage() {
                       {roadBlocks.map((clue) => (
                         <Link
                           key={clue.id}
-                          href={`/admin/clues/${clue.id}`}
+                          href={`/admin/clues/edit?id=${clue.id}`}
                         >
                           <RoadBlockCard clue={clue} />
                         </Link>
@@ -240,5 +253,17 @@ export default function ClueSetEditorPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function ClueSetEditorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <ClueSetEditorContent />
+    </Suspense>
   );
 }

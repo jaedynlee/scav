@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { teamDAO } from "@/lib/dao/team";
 import { huntDAO } from "@/lib/dao/hunt";
@@ -11,10 +11,9 @@ import Card from "@/components/shared/Card";
 import Button from "@/components/shared/Button";
 import { ProgressSummary } from "@/components/team/ProgressSummary";
 
-export default function TeamAnswersPage() {
-  const params = useParams();
+function TeamAnswersContent() {
   const searchParams = useSearchParams();
-  const teamId = params.teamId as string;
+  const teamId = searchParams.get("teamId");
   const backLink = searchParams.get("backLink") || "/";
 
   const [team, setTeam] = useState<Team | null>(null);
@@ -33,6 +32,10 @@ export default function TeamAnswersPage() {
   }, [teamId]);
 
   async function loadData() {
+    if (!teamId) {
+      setLoading(false);
+      return;
+    }
     try {
       // Load data with individual error handling
       let loadedTeam: Team | null = null;
@@ -153,6 +156,17 @@ export default function TeamAnswersPage() {
     if (url.startsWith("data:image/")) return "image";
     if (url.startsWith("data:video/")) return "video";
     return "image";
+  }
+
+  if (!teamId) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">Team ID is required</p>
+        <Link href="/">
+          <Button>Back to Home</Button>
+        </Link>
+      </div>
+    );
   }
 
   if (loading) {
@@ -295,5 +309,17 @@ export default function TeamAnswersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function TeamAnswersPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <TeamAnswersContent />
+    </Suspense>
   );
 }

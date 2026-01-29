@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { submitAnswer as submitGameAnswer } from "@/lib/dao/gameLogic";
 import type { Hunt, Clue, Team, TeamProgress, ClueSet } from "@/lib/models/types";
 import ClueDisplay from "@/components/team/ClueDisplay";
@@ -17,10 +17,10 @@ import { teamDAO } from "@/lib/dao/team";
 import { huntDAO } from "@/lib/dao/hunt";
 import { clueDAO } from "@/lib/dao/clue";
 
-export default function TeamHuntPage() {
+function TeamHuntContent() {
   const router = useRouter();
-  const params = useParams();
-  const teamId = params.teamId as string;
+  const searchParams = useSearchParams();
+  const teamId = searchParams.get("teamId");
 
   const [hunt, setHunt] = useState<Hunt | null>(null);
   const [team, setTeam] = useState<Team | null>(null);
@@ -379,7 +379,7 @@ export default function TeamHuntPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Link
-                    href={`/team/${team.id}/answers?backLink=${encodeURIComponent(`/team/${team.id}`)}`}
+                    href={`/team/answers?teamId=${team.id}&backLink=${encodeURIComponent(`/team?teamId=${team.id}`)}`}
                     className="text-xs font-black text-violet-700 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border-2 border-violet-200 shadow-md hover:bg-violet-50 transition-colors cursor-pointer"
                   >
                     {team.name}
@@ -465,5 +465,17 @@ export default function TeamHuntPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function TeamHuntPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <p className="text-gray-600 text-lg">Loading hunt...</p>
+      </div>
+    }>
+      <TeamHuntContent />
+    </Suspense>
   );
 }

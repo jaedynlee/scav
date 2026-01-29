@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { clueDAO } from "@/lib/dao/clue";
 import type { Clue, ClueSet, ClueType } from "@/lib/models/types";
 import Button from "@/components/shared/Button";
@@ -11,10 +11,10 @@ import Card from "@/components/shared/Card";
 import ImageUpload from "@/components/admin/ImageUpload";
 import Link from "next/link";
 
-export default function ClueEditorPage() {
-  const params = useParams();
+function ClueEditorContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const clueId = params.id as string;
+  const clueId = searchParams.get("id");
 
   const [clue, setClue] = useState<Clue | null>(null);
   const [clueSet, setClueSet] = useState<ClueSet | null>(null);
@@ -30,10 +30,12 @@ export default function ClueEditorPage() {
   const [minutes, setMinutes] = useState<number | null>(null);
 
   useEffect(() => {
-    loadClue();
+    if (clueId) loadClue();
+    else setLoading(false);
   }, [clueId]);
 
   async function loadClue() {
+    if (!clueId) return;
     try {
       const loadedClue = await clueDAO.getClue(clueId);
       if (!loadedClue) {
@@ -62,7 +64,7 @@ export default function ClueEditorPage() {
   }
 
   async function handleSave() {
-    if (!clue) return;
+    if (!clue || !clueId) return;
 
     setSaving(true);
     setError("");
@@ -112,12 +114,23 @@ export default function ClueEditorPage() {
       // Delete clue (endpoint handles removing from clue set)
       await clueDAO.deleteClue(clue.id);
 
-      router.push(`/admin/cluesets/${clueSet.id}`);
+      router.push(`/admin/cluesets/edit?id=${clueSet.id}`);
     } catch (err: any) {
       const errorMessage = err?.message || "Failed to delete clue";
       setError(errorMessage);
       console.error("Error deleting clue:", err);
     }
+  }
+
+  if (!clueId) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">Clue ID is required</p>
+        <Link href="/admin/hunts">
+          <Button>Back to Hunts</Button>
+        </Link>
+      </div>
+    );
   }
 
   if (loading) {
@@ -143,7 +156,7 @@ export default function ClueEditorPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Edit Clue</h1>
-        <Link href={`/admin/cluesets/${clueSet.id}`}>
+        <Link href={`/admin/cluesets/edit?id=${clueSet.id}`}>
           <Button variant="secondary">Back to ClueSet</Button>
         </Link>
       </div>
@@ -236,5 +249,17 @@ export default function ClueEditorPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function ClueEditorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <ClueEditorContent />
+    </Suspense>
   );
 }

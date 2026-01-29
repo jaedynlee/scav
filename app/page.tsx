@@ -54,10 +54,10 @@ export default function Home() {
       if (isCompleted) {
         const backLink = encodeURIComponent("/");
         router.push(
-          `/admin/hunts/${team.huntId}/teams/${team.id}/answers?backLink=${backLink}`
+          `/team/answers?teamId=${team.id}&backLink=${backLink}`
         );
       } else {
-        router.push(`/team/${team.id}`);
+        router.push(`/team?teamId=${team.id}`);
       }
     } catch (err) {
       setError("Invalid join code. Please check your code and try again.");

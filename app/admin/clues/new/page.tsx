@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { clueDAO } from "@/lib/dao/clue";
 import type { ClueSet, ClueType } from "@/lib/models/types";
@@ -10,7 +10,7 @@ import Textarea from "@/components/shared/Textarea";
 import Card from "@/components/shared/Card";
 import ImageUpload from "@/components/admin/ImageUpload";
 
-export default function NewCluePage() {
+function NewClueContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const clueSetId = searchParams.get("clueSetId");
@@ -78,7 +78,7 @@ export default function NewCluePage() {
         minutes: clueType === "EXPRESS_PASS" ? (minutes ?? null) : null,
       });
 
-      router.push(`/admin/cluesets/${clueSetId}`);
+      router.push(`/admin/cluesets/edit?id=${clueSetId}`);
     } catch (err: any) {
       const errorMessage = err?.message || "Failed to create clue";
       if (errorMessage.includes("allows_media") || errorMessage.includes("column")) {
@@ -205,5 +205,17 @@ export default function NewCluePage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function NewCluePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <NewClueContent />
+    </Suspense>
   );
 }
