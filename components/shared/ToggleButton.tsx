@@ -2,7 +2,7 @@
 
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
-interface ToggleButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+interface ToggleButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children" | "onToggle"> {
   /** Current pressed state (controlled). */
   pressed: boolean;
   /** Called when the user toggles; receives the new pressed state. */
