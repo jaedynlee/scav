@@ -46,6 +46,34 @@ export class HuntDAO {
   }
 
   async deleteHunt(id: string): Promise<void> {
+    // Delete dependents first (FKs reference hunts)
+    const { error: submissionsErr } = await supabase
+      .from("answer_submissions")
+      .delete()
+      .eq("hunt_id", id);
+    if (submissionsErr) throw submissionsErr;
+
+    const { data: teams } = await supabase.from("teams").select("id").eq("hunt_id", id);
+    for (const t of teams ?? []) {
+      const { error: progressErr } = await supabase
+        .from("team_progress")
+        .delete()
+        .eq("team_id", t.id);
+      if (progressErr) throw progressErr;
+    }
+
+    const { error: teamsErr } = await supabase.from("teams").delete().eq("hunt_id", id);
+    if (teamsErr) throw teamsErr;
+
+    const { data: clueSets } = await supabase.from("clue_sets").select("id").eq("hunt_id", id);
+    for (const cs of clueSets ?? []) {
+      const { error: cluesErr } = await supabase.from("clues").delete().eq("clue_set_id", cs.id);
+      if (cluesErr) throw cluesErr;
+    }
+
+    const { error: setsErr } = await supabase.from("clue_sets").delete().eq("hunt_id", id);
+    if (setsErr) throw setsErr;
+
     const { error } = await supabase.from("hunts").delete().eq("id", id);
     if (error) throw error;
   }
