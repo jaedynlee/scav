@@ -13,3 +13,11 @@ export function formatElapsedMs(ms: number): string {
   parts.push(`${s} sec`);
   return parts.join(" ");
 }
+
+export function formatTimeHMS(ms: number): string {
+  const totalSec = Math.floor(ms / 1_000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${h.toString().padStart(2, '0')}:${Math.abs(m).toString().padStart(2, '0')}:${Math.abs(s).toString().padStart(2, '0')}`;
+}

@@ -1,8 +1,10 @@
-import { formatElapsedMs } from "@/lib/utils/format";
+import { formatTimeHMS } from "@/lib/utils/format";
 import ProgressBar from "../shared/ProgressBar";
 import { TeamProgress } from "@/lib/models/types";
 import { useEffect, useMemo, useState } from "react";
 import { clueDAO } from "@/lib/dao/clue";
+
+// TODO: the time calculations are off by a few seconds
 
 export function ProgressSummary({ progress }: { progress: TeamProgress }) {
     const [loading, setLoading] = useState(true);
@@ -35,11 +37,14 @@ export function ProgressSummary({ progress }: { progress: TeamProgress }) {
         }
     }
 
-    const elapsedTime = useMemo(() => {
+    const elapsedTimeMs = useMemo(() => {
         if (!progress?.startedAt) return 0;
-        return (progress.completedAt
+        const roundToSecond = (ms: number) => Math.round(ms / 1000) * 1000;
+        const startMs = new Date(progress.startedAt).getTime()
+        const endMs = progress.completedAt
             ? new Date(progress.completedAt).getTime()
-            : now.getTime()) - new Date(progress.startedAt).getTime()
+            : now.getTime();
+        return roundToSecond(endMs) - roundToSecond(startMs);
     }, [progress?.completedAt, progress?.startedAt, now]);
 
     // Update "now" every minute when hunt is in progress (for elapsed time)
@@ -88,7 +93,7 @@ export function ProgressSummary({ progress }: { progress: TeamProgress }) {
                         <div>
                             <span className="text-gray-600 font-medium">Time elapsed:</span>{" "}
                             <span className={timeSavedMinutes !== 0 ? "font-semibold text-gray-900" : "font-semibold text-emerald-700"}>
-                                {formatElapsedMs(elapsedTime)}
+                                {formatTimeHMS(elapsedTimeMs)}
                             </span>
                         </div>
                     )}
@@ -100,14 +105,14 @@ export function ProgressSummary({ progress }: { progress: TeamProgress }) {
                             </span>
                         </div>
                     )}
-                    {timeSavedMinutes !== 0 && elapsedTime !== 0 && (
+                    {/* {timeSavedMinutes !== 0 && elapsedTimeMs !== 0 && (
                         <div>
                             <span className="text-gray-600 font-medium">Effective time:</span>{" "}
                             <span className="font-semibold text-emerald-700">
-                                {formatElapsedMs(elapsedTime + timeSavedMinutes * 60_000)}
+                                {formatTimeHMS(elapsedTimeMs - (Math.abs(timeSavedMinutes) * 60_000))}
                             </span>
                         </div>
-                    )}
+                    )} */}
                 </div>
             )}
         </div>

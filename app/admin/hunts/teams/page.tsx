@@ -15,6 +15,8 @@ import { CreateNewTeamCard } from "./components/CreateNewTeamCard";
 import { huntDAO } from "@/lib/dao/hunt";
 import { clueDAO } from "@/lib/dao/clue";
 
+const TEAMS_REFRESH_MS = 5000;
+
 interface TeamWithProgress extends Team {
   progress: TeamProgress | null;
   currentClueSet: ClueSet | null;
@@ -32,8 +34,13 @@ function TeamManagementContent() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (huntId) loadData();
-    else setLoading(false);
+    if (!huntId) {
+      setLoading(false);
+      return;
+    }
+    loadData();
+    const interval = setInterval(() => loadTeams(), TEAMS_REFRESH_MS);
+    return () => clearInterval(interval);
   }, [huntId]);
 
   async function loadData() {
