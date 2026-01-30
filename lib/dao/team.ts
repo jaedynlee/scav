@@ -180,11 +180,11 @@ export class TeamDAO {
   }
 
   async createTeamProgress(
-    { huntId, teamId }: { huntId: string, teamId: string }
+    { huntId, teamId, currentClueId, currentClueSetId }: { huntId: string, teamId: string, currentClueId: string | null, currentClueSetId: string | null }
   ): Promise<TeamProgress> {
     const { data, error } = await supabase
       .from("team_progress")
-      .upsert({ hunt_id: huntId, team_id: teamId })
+      .upsert({ hunt_id: huntId, team_id: teamId, current_clue_id: currentClueId, current_clue_set_id: currentClueSetId })
       .select("*")
       .single();
     if (error) throw error;

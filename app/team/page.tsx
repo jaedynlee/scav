@@ -126,70 +126,10 @@ function TeamHuntContent() {
             setCurrentClueSet(clueSet);
           }
         } catch (err) {
-          console.error("Failed to load current clue:", err);
-          // If clue doesn't exist, try to get the first clue from the hunt
-          if (loadedProgress && !loadedProgress.completedAt) {
-            // Try to find the first clue in the hunt
-            try {
-              const clueSets = await clueDAO.getClueSetsByHunt(huntId);
-              if (clueSets.length > 0) {
-                const sortedClueSets = [...clueSets].sort((a, b) => a.position - b.position);
-                const firstClueSet = sortedClueSets[0];
-                const clues = await clueDAO.getCluesByClueSet(firstClueSet.id);
-                const requiredClues = clues.filter((c) => c.position != null);
-                if (requiredClues.length > 0) {
-                  const sorted = [...requiredClues].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-                  const firstClue = sorted[0];
-                  setCurrentClue(firstClue);
-                  setCurrentClueSet(firstClueSet);
-                  await teamDAO.updateTeamProgress(teamId, huntId, {
-                    currentClueId: firstClue.id,
-                    currentClueSetId: firstClueSet.id,
-                  });
-                } else {
-                  setError("The hunt has clue sets but no clues yet. Please contact admin.");
-                }
-              } else {
-                setError("The hunt has no clue sets yet. Please contact admin.");
-              }
-            } catch (reinitErr) {
-              console.error("Failed to reinitialize clue:", reinitErr);
-              setError("Current clue not found. Please contact admin.");
-            }
-          }
-        }
-      } else if (loadedProgress && !loadedProgress.completedAt) {
-        // Progress exists but no current clue - try to find the first clue
-        try {
-          const clueSets = await clueDAO.getClueSetsByHunt(huntId);
-          if (clueSets.length > 0) {
-            // Sort clue sets by position to get the first one
-            const sortedClueSets = [...clueSets].sort((a, b) => a.position - b.position);
-            const firstClueSet = sortedClueSets[0];
-            const clues = await clueDAO.getCluesByClueSet(firstClueSet.id);
-            const requiredClues = clues.filter((c) => c.position != null);
-            if (requiredClues.length > 0) {
-              const sortedClues = [...requiredClues].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-              const firstClue = sortedClues[0];
-              setCurrentClue(firstClue);
-              setCurrentClueSet(firstClueSet);
-              // Update progress with the correct clue
-              const updatedProgress = await teamDAO.updateTeamProgress(teamId, huntId, {
-                currentClueId: firstClue.id,
-                currentClueSetId: firstClueSet.id,
-              });
-              if (updatedProgress) {
-                setProgress(updatedProgress);
-              }
-            } else {
-              setError("The hunt has clue sets but no clues yet. Please contact admin.");
-            }
-          } else {
-            setError("The hunt has no clue sets yet. Please contact admin.");
-          }
-        } catch (err) {
-          console.error("Failed to find first clue:", err);
-          setError("No clues available. The hunt may not have any clues yet.");
+          setError("Failed to load current clue");
+          console.error(err);
+        } finally {
+          setLoading(false);
         }
       }
     } catch (err) {
