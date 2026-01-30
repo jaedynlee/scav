@@ -66,6 +66,12 @@ export class TeamDAO {
     if (!team) {
       throw new Error("Team not found");
     }
+
+    const teamProgress = await this.getTeamProgress(team.id);
+    if (!teamProgress?.startedAt) {
+      await this.updateTeamProgress(team.id, team.huntId, { startedAt: new Date().toISOString() });
+    }
+
     return team;
   }
 
