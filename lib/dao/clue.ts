@@ -173,10 +173,13 @@ export class ClueDAO {
   }
 
   async getAvailableRoadBlocks(teamId: string): Promise<Clue[]> {
-    // Mirror logic in api/main.py:get_available_road_blocks
+    // Only return road blocks assigned to this team that are not yet completed.
     const progress = await teamDAO.getTeamProgress(teamId);
     const cluesetId = progress?.currentClueSetId;
     const completedIds = new Set(progress?.completedClueIds ?? []);
+    const assignedRoadBlockIds = new Set(
+      (progress?.roadBlockClueIds ?? []).map((id) => String(id))
+    );
     if (!cluesetId) return [];
 
     const { data, error } = await supabase
@@ -187,7 +190,9 @@ export class ClueDAO {
     if (error) throw error;
     const rows = (data ?? []).filter(
       (row: any) =>
-        !completedIds.has(String(row.id)) && !completedIds.has(row.id)
+        assignedRoadBlockIds.has(String(row.id)) &&
+        !completedIds.has(String(row.id)) &&
+        !completedIds.has(row.id)
     );
     rows.forEach((row: any) => {
       if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
