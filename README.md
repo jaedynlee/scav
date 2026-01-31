@@ -84,7 +84,7 @@ components/
   admin/              # AnswerSubmissions, ImageUpload
   clue/               # ExpressPassCard, RoadBlockCard
   shared/             # Button, Card, Input, Textarea, etc.
-  team/               # AnswerInput, ClueDisplay, ClueHistory, etc.
+  team/               # AnswerInput, ClueDisplay, etc.
 
 lib/
   dao/                # Data access: hunt, clue, team, gameLogic

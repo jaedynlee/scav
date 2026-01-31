@@ -1,5 +1,4 @@
 import type { Clue } from "@/lib/models/types";
-import Card from "@/components/shared/Card";
 
 interface ClueDisplayProps {
   clue: Clue;

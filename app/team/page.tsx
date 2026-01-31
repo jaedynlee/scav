@@ -7,7 +7,6 @@ import type { Hunt, Clue, Team, TeamProgress, ClueSet } from "@/lib/models/types
 import ClueDisplay from "@/components/team/ClueDisplay";
 import AnswerInput from "@/components/team/AnswerInput";
 import ProgressIndicator from "@/components/team/ProgressIndicator";
-import ClueHistory from "@/components/team/ClueHistory";
 import Card from "@/components/shared/Card";
 import Button from "@/components/shared/Button";
 import Link from "next/link";
@@ -31,7 +30,6 @@ function TeamHuntContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [lastAnswerError, setLastAnswerError] = useState("");
-  const [showHistory, setShowHistory] = useState(false);
   const [viewingExpressPass, setViewingExpressPass] = useState<Clue | null>(null);
   const [viewingRoadBlock, setViewingRoadBlock] = useState<Clue | null>(null);
   const [availableExpressPasses, setAvailableExpressPasses] = useState<Clue[]>([]);
@@ -286,123 +284,99 @@ function TeamHuntContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-100 to-rose-100 p-4">
       <div className="max-w-2xl mx-auto">
-        {showHistory ? (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="tertiary"
-                  onClick={() => setShowHistory(false)}
-                  className="text-xs py-1.5 px-3"
-                >
-                  ← Back to current clueset
-                </Button>
-                <h2 className="text-xl font-black bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-                  Completed clues
-                </h2>
+        <div className="space-y-6">
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4 gap-3">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <h1 className="text-xl font-black bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-500 bg-clip-text text-transparent truncate">
+                  {hunt.name}
+                </h1>
               </div>
-
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Link
+                  href={`/team/answers?teamId=${team.id}&backLink=${encodeURIComponent(`/team?teamId=${team.id}`)}`}
+                  className="text-xs font-black text-violet-700 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border-2 border-violet-200 shadow-md hover:bg-violet-50 transition-colors cursor-pointer"
+                >
+                  {team.name}
+                </Link>
+              </div>
             </div>
-            <ClueHistory
-              completedClueSetIds={progress.completedClueSetIds}
+            <ProgressIndicator
               progress={progress}
             />
+            {timeSavedMinutes !== 0 && (
+              <p className="text-sm font-semibold text-amber-700">
+                Time saved: {Math.abs(timeSavedMinutes)} min
+              </p>
+            )}
           </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4 gap-3">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <h1 className="text-xl font-black bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-500 bg-clip-text text-transparent truncate">
-                    {hunt.name}
-                  </h1>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Link
-                    href={`/team/answers?teamId=${team.id}&backLink=${encodeURIComponent(`/team?teamId=${team.id}`)}`}
-                    className="text-xs font-black text-violet-700 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border-2 border-violet-200 shadow-md hover:bg-violet-50 transition-colors cursor-pointer"
+
+          {!(viewingRoadBlock || viewingExpressPass) && availableRoadBlocks.map((clue) => (
+            <button
+              key={clue.id}
+              type="button"
+              onClick={() => setViewingRoadBlock(clue)}
+              className="w-full"
+            >
+              <RoadBlockCard clue={clue} />
+            </button>
+          ))}
+
+          {!(viewingRoadBlock || viewingExpressPass) && availableExpressPasses.map((clue) => (
+            <button
+              key={clue.id}
+              type="button"
+              onClick={() => setViewingExpressPass(clue)}
+              className="w-full"
+            >
+              <ExpressPassCard clue={clue} />
+            </button>
+          ))}
+
+          <Card className={`flex flex-col gap-6 border-2 border-violet-200 shadow-2xl`}>
+            {viewingRoadBlock ? (
+              <div className="flex flex-col items-start space-y-3">
+                {!isRoadBlockGateMode && (
+                  <Button
+                    variant="tertiary"
+                    onClick={() => setViewingRoadBlock(null)}
+                    className="text-xs py-1.5 px-3"
                   >
-                    {team.name}
-                  </Link>
-                </div>
+                    ← Back to current clue
+                  </Button>
+                )}
+                <RoadBlockBadge />
               </div>
-              <ProgressIndicator
-                progress={progress}
-              />
-              {timeSavedMinutes !== 0 && (
-                <p className="text-sm font-semibold text-amber-700">
-                  Time saved: {Math.abs(timeSavedMinutes)} min
-                </p>
-              )}
-            </div>
-
-            {!(viewingRoadBlock || viewingExpressPass) && availableRoadBlocks.map((clue) => (
-              <button
-                key={clue.id}
-                type="button"
-                onClick={() => setViewingRoadBlock(clue)}
-                className="w-full"
-              >
-                <RoadBlockCard clue={clue} />
-              </button>
-            ))}
-
-            {!(viewingRoadBlock || viewingExpressPass) && availableExpressPasses.map((clue) => (
-              <button
-                key={clue.id}
-                type="button"
-                onClick={() => setViewingExpressPass(clue)}
-                className="w-full"
-              >
-                <ExpressPassCard clue={clue} />
-              </button>
-            ))}
-
-            <Card className={`flex flex-col gap-6 border-2 border-violet-200 shadow-2xl`}>
-              {viewingRoadBlock ? (
-                <div className="flex flex-col items-start space-y-3">
-                  {!isRoadBlockGateMode && (
-                    <Button
-                      variant="tertiary"
-                      onClick={() => setViewingRoadBlock(null)}
-                      className="text-xs py-1.5 px-3"
-                    >
-                      ← Back to current clue
-                    </Button>
-                  )}
-                  <RoadBlockBadge />
-                </div>
-              ) : viewingExpressPass ? (
-                <div className="flex flex-col items-start space-y-3">
-                  {!isRoadBlockGateMode && (
-                    <Button
-                      variant="tertiary"
-                      onClick={() => setViewingExpressPass(null)}
-                      className="text-xs py-1.5 px-3"
-                    >
-                      ← Back to current clue
-                    </Button>
-                  )}
-                  <span className="text-xs font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded">
-                    Express Pass
-                  </span>
-                </div>
-              ) : null}
-              <ClueDisplay clue={viewingRoadBlock ?? viewingExpressPass ?? currentClue} />
-              <AnswerInput
-                onSubmit={handleAnswerSubmit}
-                disabled={submitting}
-                allowsMedia={(viewingRoadBlock ?? viewingExpressPass ?? currentClue).allowsMedia}
-                clueHasTextAnswer={(viewingRoadBlock ?? viewingExpressPass ?? currentClue).hasTextAnswer}
-              />
-              {lastAnswerError && (
-                <div className="mb-4 bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl font-medium">
-                  {lastAnswerError}
-                </div>
-              )}
-            </Card>
-          </div>
-        )}
+            ) : viewingExpressPass ? (
+              <div className="flex flex-col items-start space-y-3">
+                {!isRoadBlockGateMode && (
+                  <Button
+                    variant="tertiary"
+                    onClick={() => setViewingExpressPass(null)}
+                    className="text-xs py-1.5 px-3"
+                  >
+                    ← Back to current clue
+                  </Button>
+                )}
+                <span className="text-xs font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded">
+                  Express Pass
+                </span>
+              </div>
+            ) : null}
+            <ClueDisplay clue={viewingRoadBlock ?? viewingExpressPass ?? currentClue} />
+            <AnswerInput
+              onSubmit={handleAnswerSubmit}
+              disabled={submitting}
+              allowsMedia={(viewingRoadBlock ?? viewingExpressPass ?? currentClue).allowsMedia}
+              clueHasTextAnswer={(viewingRoadBlock ?? viewingExpressPass ?? currentClue).hasTextAnswer}
+            />
+            {lastAnswerError && (
+              <div className="mb-4 bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-xl font-medium">
+                {lastAnswerError}
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
     </div>
   );
