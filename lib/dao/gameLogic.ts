@@ -12,7 +12,10 @@ function revealClueRow(row: Record<string, unknown>): void {
 }
 
 function normalizeAnswer(answer: string): string {
-  return (answer || "").trim().toLowerCase();
+  return (answer || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]/gu, "");
 }
 
 

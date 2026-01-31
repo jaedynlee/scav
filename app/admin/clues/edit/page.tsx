@@ -69,8 +69,8 @@ function ClueEditorContent() {
     setSaving(true);
     setError("");
 
-    if (clueType === "CLUE" && !correctAnswer.trim()) {
-      setError("Correct answer is required for required clues");
+    if (clueType === "CLUE" && !correctAnswer.trim() && !allowsMedia) {
+      setError("Correct answer or media is required for required clues");
       setSaving(false);
       return;
     }
