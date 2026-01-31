@@ -1,28 +1,11 @@
 import type {
-  Hunt,
-  ClueSet,
-  Clue,
   Team,
   TeamProgress,
-  AnswerSubmission,
 } from "@/lib/models/types";
 import { supabase } from "@/app/supabaseClient";
 import { toSnakeCase, keysToCamel } from "@/lib/utils/casing";
 
 export class TeamDAO {
-  async getTeamAnswerSubmissions(teamId: string): Promise<Array<import("@/lib/models/types").AnswerSubmission>> {
-    const { data, error } = await supabase
-      .from("answer_submissions")
-      .select("*")
-      .eq("team_id", teamId)
-      .order("submitted_at", { ascending: false });
-    if (error) {
-      console.error("Error fetching answer submissions:", error);
-      return [];
-    }
-    return keysToCamel<AnswerSubmission[]>(data ?? []);
-  }
-
   async createTeam({ huntId, name }: { huntId: string, name: string }): Promise<Team> {
     // Mirror admin create_team: ensure hunt exists, then insert team with unique join_code
     const { data: hunt, error: huntErr } = await supabase

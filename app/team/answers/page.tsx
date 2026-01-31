@@ -10,6 +10,7 @@ import type { AnswerSubmission, Clue, Team, Hunt, TeamProgress } from "@/lib/mod
 import Card from "@/components/shared/Card";
 import Button from "@/components/shared/Button";
 import { ProgressSummary } from "@/components/team/ProgressSummary";
+import { answerSubmissionDAO } from "@/lib/dao/answerSubmission";
 
 function TeamAnswersContent() {
   const searchParams = useSearchParams();
@@ -76,7 +77,7 @@ function TeamAnswersContent() {
       }
 
       try {
-        loadedSubmissions = await teamDAO.getTeamAnswerSubmissions(teamId);
+        loadedSubmissions = await answerSubmissionDAO.getByTeamId(teamId);
       } catch (err) {
         console.error("Failed to load submissions:", err);
         loadedSubmissions = [];
@@ -225,35 +226,52 @@ function TeamAnswersContent() {
 
             {submissions.map((submission) => {
               const clue = clues[submission.clueId];
-              const isCorrect = progress?.completedClueIds.includes(submission.clueId) || false;
+              const clueType = clue?.clueType ?? "CLUE";
+              const typeLabel =
+                clueType === "EXPRESS_PASS"
+                  ? "Express Pass"
+                  : clueType === "ROAD_BLOCK"
+                    ? "Road Block"
+                    : null;
 
               return (
                 <Card key={submission.id} className="border-2 border-violet-200">
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                           <p className="text-xs text-gray-500">
                             {new Date(submission.submittedAt).toLocaleString()}
                           </p>
-                          {/* {isCorrect ? (
-                            <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full ml-auto">
-                              ✓
+                          <span
+                            className={
+                              clueType === "EXPRESS_PASS"
+                                ? "text-xs font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded"
+                                : clueType === "ROAD_BLOCK"
+                                  ? "text-xs font-bold bg-rose-200 text-rose-800 px-2 py-0.5 rounded"
+                                  : undefined
+                            }
+                          >
+                            {typeLabel}
+                          </span>
+                          {submission.isCorrect === true ? (
+                            <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                              ✓ Correct
                             </span>
-                          ) : (
-                            <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-1 rounded-full ml-auto">
-                              ✗
+                          ) : submission.isCorrect === false ? (
+                            <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                              ✗ Incorrect
                             </span>
-                          )} */}
+                          ) : null
+                          }
                         </div>
                         {clue && (
                           <div className="mb-3">
                             <p className="text-sm font-semibold text-gray-600 mb-1">
-                              Clue:
+                              Prompt:
                             </p>
                             <p className="text-base font-medium text-gray-900">
-                              {clue.prompt ||
-                                (clue.position != null ? `Clue #${clue.position + 1}` : "Clue")}
+                              {clue.prompt || typeLabel}
                             </p>
                           </div>
                         )}

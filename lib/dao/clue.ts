@@ -6,6 +6,7 @@ import { supabase } from "@/app/supabaseClient";
 import { toSnakeCase, keysToCamel } from "@/lib/utils/casing";
 import { obscureAnswer, revealAnswer } from "@/lib/utils/obscure";
 import { teamDAO } from "./team";
+import { answerSubmissionDAO } from "./answerSubmission";
 
 export class ClueDAO {
   async createClueSet(clueSet: Omit<ClueSet, "id" | "position">): Promise<ClueSet> {
@@ -237,9 +238,7 @@ export class ClueDAO {
   }
 
   async deleteClue(id: string): Promise<void> {
-    // Mirror admin delete: remove from clue_sets.clue_ids then delete clue + submissions
-    // Delete answer submissions for this clue
-    await supabase.from("answer_submissions").delete().eq("clue_id", id);
+    await answerSubmissionDAO.deleteByClueId(id);
 
     // Remove from its clue set's clue_ids array
     const { data: clueRow, error: clueErr } = await supabase

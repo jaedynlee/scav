@@ -75,4 +75,5 @@ export interface AnswerSubmission {
   answerText: string;
   mediaUrls: string[]; // URLs or base64 strings
   submittedAt: string;
+  isCorrect: boolean;
 }

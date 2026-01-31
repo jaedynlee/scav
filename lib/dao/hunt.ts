@@ -3,6 +3,7 @@ import type {
 } from "@/lib/models/types";
 import { supabase } from "@/app/supabaseClient";
 import { toSnakeCase, keysToCamel } from "@/lib/utils/casing";
+import { answerSubmissionDAO } from "./answerSubmission";
 
 export class HuntDAO {
   async createHunt({ name, description }: { name: string, description?: string }): Promise<Hunt> {
@@ -47,11 +48,7 @@ export class HuntDAO {
 
   async deleteHunt(id: string): Promise<void> {
     // Delete dependents first (FKs reference hunts)
-    const { error: submissionsErr } = await supabase
-      .from("answer_submissions")
-      .delete()
-      .eq("hunt_id", id);
-    if (submissionsErr) throw submissionsErr;
+    await answerSubmissionDAO.deleteByHuntId(id);
 
     const { data: teams } = await supabase.from("teams").select("id").eq("hunt_id", id);
     for (const t of teams ?? []) {

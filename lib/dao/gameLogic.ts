@@ -4,6 +4,7 @@ import { keysToCamel } from "@/lib/utils/casing";
 import { revealAnswer } from "@/lib/utils/obscure";
 import { teamDAO } from "./team";
 import { clueDAO } from "./clue";
+import { answerSubmissionDAO } from "./answerSubmission";
 
 function revealClueRow(row: Record<string, unknown>): void {
   if (row.correct_answer != null) {
@@ -168,21 +169,8 @@ export async function submitAnswer(
     throw new Error("Media upload is required for this clue");
   }
 
-  // Store answer submission
-  const submission = {
-    team_id: teamId,
-    clue_id: payload.clueId,
-    hunt_id: payload.huntId,
-    answer_text: payload.answer,
-    media_urls: payload.mediaUrls ?? [],
-    submitted_at: new Date().toISOString(),
-  };
-  await supabase.from("answer_submissions").insert(submission);
-
-  // Correctness (clue.correctAnswer is already plaintext from DAO reveal)
   const answerText = (payload.answer || "").trim();
   const correctAnswer = (clue.correctAnswer || "").trim();
-
   let correct = false;
   if (answerText && correctAnswer) {
     correct =
@@ -190,6 +178,15 @@ export async function submitAnswer(
   } else if (hasMedia && allowsMedia) {
     correct = true;
   }
+
+  await answerSubmissionDAO.create({
+    teamId,
+    clueId: payload.clueId,
+    huntId: payload.huntId,
+    answerText: payload.answer,
+    mediaUrls: payload.mediaUrls ?? [],
+    isCorrect: correct,
+  });
 
   if (!correct) {
     return { correct: false, huntCompleted: false, nextClue: null };
