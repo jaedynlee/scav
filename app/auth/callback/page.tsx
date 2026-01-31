@@ -42,13 +42,13 @@ export default function CallbackPage() {
                 // Supabase stores session in localStorage, but middleware needs cookies
                 const expiresIn = data.session.expires_in || 3600;
                 document.cookie = `authSession=${data.session.access_token}; path=/; max-age=${expiresIn}; SameSite=Lax`;
-                console.log("Session created, redirecting to /");
+                console.log("Session created, redirecting to /scav");
                 // Use window.location for full page reload to ensure cookie is sent
-                window.location.href = "/";
+                window.location.href = "/scav";
             } else {
-                console.log("No session, redirecting to /login");
+                console.log("No session, redirecting to /scav/auth");
                 // No session and no explicit error: send user back to login
-                router.replace("/login");
+                router.replace("/scav/auth");
             }
         }
 
