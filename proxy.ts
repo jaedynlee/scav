@@ -75,7 +75,7 @@ async function checkUserRole(accessToken: string): Promise<string | null> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow Next.js internals and public paths through without checks
@@ -123,10 +123,9 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Apply middleware to all application routes except static assets by default
+// Apply proxy to all application routes except static assets by default
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
-

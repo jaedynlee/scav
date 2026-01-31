@@ -26,8 +26,12 @@ jobs:
 
       - run: npm install
 
+      # Disable proxy for static export (Next.js doesn't allow both)
+      - run: mv proxy.ts proxy.disabled.ts
+
       - run: npm run build
         env:
+          ENABLE_STATIC_EXPORT: "true"
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
