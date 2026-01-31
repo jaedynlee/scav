@@ -69,10 +69,12 @@ export class ClueDAO {
   }
 
   async createClue(clue: Omit<Clue, "id" | "position" | "hasTextAnswer">): Promise<Clue> {
-    // Position is managed by a database trigger / server-side logic; we only send core fields
+    const clues = await this.getCluesByClueSet(clue.clueSetId);
+    const orderedClues = clues.filter((c) => c.position != null);
+    const lastPosition = orderedClues.length > 0 ? orderedClues[orderedClues.length - 1].position ?? 0 : 0;
     const { data, error } = await supabase
       .from("clues")
-      .insert(toSnakeCase(clue))
+      .insert(toSnakeCase({ ...clue, position: lastPosition + 1 }))
       .select("*")
       .single();
     if (error) throw error;
@@ -105,7 +107,8 @@ export class ClueDAO {
     const { data, error } = await supabase
       .from("clues")
       .select("*")
-      .eq("clue_set_id", clueSetId);
+      .eq("clue_set_id", clueSetId)
+      .order("position", { ascending: true });
     if (error) throw error;
     const rows = (data ?? []).map((row: any) => {
       row.has_text_answer = !!row.correct_answer;
