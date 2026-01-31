@@ -4,6 +4,7 @@ import type {
 } from "@/lib/models/types";
 import { supabase } from "@/app/supabaseClient";
 import { toSnakeCase, keysToCamel } from "@/lib/utils/casing";
+import { obscureAnswer, revealAnswer } from "@/lib/utils/obscure";
 import { teamDAO } from "./team";
 
 export class ClueDAO {
@@ -72,14 +73,15 @@ export class ClueDAO {
     const clues = await this.getCluesByClueSet(clue.clueSetId);
     const orderedClues = clues.filter((c) => c.position != null);
     const lastPosition = orderedClues.length > 0 ? orderedClues[orderedClues.length - 1].position ?? 0 : 0;
+    const correctAnswer = clue.correctAnswer ? obscureAnswer(clue.correctAnswer) : undefined;
     const { data, error } = await supabase
       .from("clues")
-      .insert(toSnakeCase({ ...clue, position: lastPosition + 1 }))
+      .insert(toSnakeCase({ ...clue, correctAnswer, position: lastPosition + 1 }))
       .select("*")
       .single();
     if (error) throw error;
-    // Ensure hasTextAnswer and defaults like the API did
     const row = data as any;
+    if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
     row.has_text_answer = !!row.correct_answer;
     if (row.clue_type == null) row.clue_type = "CLUE";
     if (!("minutes" in row)) row.minutes = null;
@@ -97,6 +99,7 @@ export class ClueDAO {
       throw error;
     }
     const row = data as any;
+    if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
     row.has_text_answer = !!row.correct_answer;
     if (row.clue_type == null) row.clue_type = "CLUE";
     if (!("minutes" in row)) row.minutes = null;
@@ -111,6 +114,7 @@ export class ClueDAO {
       .order("position", { ascending: true });
     if (error) throw error;
     const rows = (data ?? []).map((row: any) => {
+      if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
       row.has_text_answer = !!row.correct_answer;
       if (row.clue_type == null) row.clue_type = "CLUE";
       if (!("minutes" in row)) row.minutes = null;
@@ -127,6 +131,7 @@ export class ClueDAO {
       .or("clue_type.eq.EXPRESS_PASS,position.is.null");
     if (error) throw error;
     const rows = (data ?? []).map((row: any) => {
+      if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
       row.has_text_answer = !!row.correct_answer;
       if (row.clue_type == null) row.clue_type = "EXPRESS_PASS";
       if (!("minutes" in row)) row.minutes = null;
@@ -158,6 +163,7 @@ export class ClueDAO {
       );
     });
     rows.forEach((row: any) => {
+      if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
       row.has_text_answer = !!row.correct_answer;
       if (row.clue_type == null) row.clue_type = "EXPRESS_PASS";
       if (!("minutes" in row)) row.minutes = null;
@@ -183,6 +189,7 @@ export class ClueDAO {
         !completedIds.has(String(row.id)) && !completedIds.has(row.id)
     );
     rows.forEach((row: any) => {
+      if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
       row.has_text_answer = !!row.correct_answer;
       if (!("minutes" in row)) row.minutes = null;
     });
@@ -212,14 +219,19 @@ export class ClueDAO {
   }
 
   async updateClue(id: string, updates: Partial<Clue>): Promise<Clue> {
+    const payload = { ...updates };
+    if (payload.correctAnswer !== undefined) {
+      payload.correctAnswer = payload.correctAnswer ? obscureAnswer(payload.correctAnswer) : undefined;
+    }
     const { data, error } = await supabase
       .from("clues")
-      .update(toSnakeCase(updates))
+      .update(toSnakeCase(payload))
       .eq("id", id)
       .select("*")
       .single();
     if (error) throw error;
     const row = data as any;
+    if (row.correct_answer != null) row.correct_answer = revealAnswer(row.correct_answer);
     row.has_text_answer = !!row.correct_answer;
     return keysToCamel<Clue>(row);
   }

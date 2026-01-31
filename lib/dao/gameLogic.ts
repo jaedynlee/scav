@@ -1,8 +1,15 @@
 import { supabase } from "@/app/supabaseClient";
 import type { Clue, SubmitAnswerResponse, TeamProgress } from "@/lib/models/types";
 import { keysToCamel } from "@/lib/utils/casing";
+import { revealAnswer } from "@/lib/utils/obscure";
 import { teamDAO } from "./team";
 import { clueDAO } from "./clue";
+
+function revealClueRow(row: Record<string, unknown>): void {
+  if (row.correct_answer != null) {
+    row.correct_answer = revealAnswer(String(row.correct_answer));
+  }
+}
 
 function normalizeAnswer(answer: string): string {
   return (answer || "").trim().toLowerCase();
@@ -30,6 +37,7 @@ export async function getNextClue(
       if (error) throw error;
       if (nextInSet && nextInSet.length > 0) {
         const row: any = nextInSet[0];
+        revealClueRow(row);
         row.has_text_answer = !!row.correct_answer;
         if (row.clue_type == null) row.clue_type = "CLUE";
         if (!("minutes" in row)) row.minutes = null;
@@ -87,6 +95,7 @@ export async function getNextClue(
   if (!nextClues || nextClues.length === 0) return null;
 
   const row: any = nextClues[0];
+  revealClueRow(row);
   row.has_text_answer = !!row.correct_answer;
   if (row.clue_type == null) row.clue_type = "CLUE";
   if (!("minutes" in row)) row.minutes = null;
@@ -167,7 +176,7 @@ export async function submitAnswer(
   };
   await supabase.from("answer_submissions").insert(submission);
 
-  // Correctness
+  // Correctness (clue.correctAnswer is already plaintext from DAO reveal)
   const answerText = (payload.answer || "").trim();
   const correctAnswer = (clue.correctAnswer || "").trim();
 
