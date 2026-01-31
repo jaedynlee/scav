@@ -7,7 +7,7 @@ type Props = {
 export function RoadBlockCard({ clue }: Props) {
     return (
         <div className="flex text-left justify-between items-center block p-4 border border-rose-200 bg-rose-100 rounded-lg transition-colors">
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 w-full">
                 <div className="flex items-center justify-between">
                     <RoadBlockBadge />
                     <span className="text-gray-400">→</span>
