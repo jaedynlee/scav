@@ -272,15 +272,15 @@ function TeamHuntContent() {
               Come join us inside!
             </p>
             <div className="pt-4">
-              <Link href="/">
+              <Link href={`/team/answers?teamId=${team.id}`}>
                 <Button fullWidth className="text-lg py-4">
                   🎊 Let's Celebrate
                 </Button>
               </Link>
             </div>
           </div>
-        </Card>
-      </div>
+        </Card >
+      </div >
     );
   }
 
@@ -307,12 +307,14 @@ function TeamHuntContent() {
             <ProgressIndicator
               progress={progress}
             />
-            {timeSavedMinutes !== 0 && (
-              <p className="text-sm font-semibold text-amber-700">
-                Time saved: {Math.abs(timeSavedMinutes)} min
-              </p>
-            )}
-          </div>
+            {
+              timeSavedMinutes !== 0 && (
+                <p className="text-sm font-semibold text-amber-700">
+                  Time saved: {Math.abs(timeSavedMinutes)} min
+                </p>
+              )
+            }
+          </div >
 
           {!(viewingRoadBlock || viewingExpressPass) && availableRoadBlocks.map((clue) => (
             <button
@@ -323,18 +325,21 @@ function TeamHuntContent() {
             >
               <RoadBlockCard clue={clue} />
             </button>
-          ))}
+          ))
+          }
 
-          {!(viewingRoadBlock || viewingExpressPass) && availableExpressPasses.map((clue) => (
-            <button
-              key={clue.id}
-              type="button"
-              onClick={() => setViewingExpressPass(clue)}
-              className="w-full"
-            >
-              <ExpressPassCard clue={clue} />
-            </button>
-          ))}
+          {
+            !(viewingRoadBlock || viewingExpressPass) && availableExpressPasses.map((clue) => (
+              <button
+                key={clue.id}
+                type="button"
+                onClick={() => setViewingExpressPass(clue)}
+                className="w-full"
+              >
+                <ExpressPassCard clue={clue} />
+              </button>
+            ))
+          }
 
           <Card className={`flex flex-col gap-6 border-2 border-violet-200 shadow-2xl`}>
             {viewingRoadBlock ? (
@@ -380,9 +385,9 @@ function TeamHuntContent() {
               </div>
             )}
           </Card>
-        </div>
-      </div>
-    </div>
+        </div >
+      </div >
+    </div >
   );
 }
 

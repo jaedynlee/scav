@@ -15,16 +15,13 @@ import { answerSubmissionDAO } from "@/lib/dao/answerSubmission";
 function TeamAnswersContent() {
   const searchParams = useSearchParams();
   const teamId = searchParams.get("teamId");
-  const backLink = searchParams.get("backLink") || "/";
+  const backLink = searchParams.get("backLink");
 
   const [team, setTeam] = useState<Team | null>(null);
   const [hunt, setHunt] = useState<Hunt | null>(null);
   const [progress, setProgress] = useState<TeamProgress | null>(null);
   const [submissions, setSubmissions] = useState<AnswerSubmission[]>([]);
   const [clues, setClues] = useState<Record<string, Clue>>({});
-  const [roadBlockClues, setRoadBlockClues] = useState<Clue[]>([]);
-  const [selectedRoadBlockIds, setSelectedRoadBlockIds] = useState<string[]>([]);
-  const [savingRoadBlocks, setSavingRoadBlocks] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -107,20 +104,6 @@ function TeamAnswersContent() {
       setHunt(loadedHunt);
       setProgress(loadedProgress);
       setSubmissions(Array.isArray(loadedSubmissions) ? loadedSubmissions : []);
-      setSelectedRoadBlockIds(loadedProgress?.roadBlockClueIds ?? []);
-
-      // Load ROAD_BLOCK clues for the hunt (for assignment UI)
-      try {
-        const clueSets = await clueDAO.getClueSetsByHunt(huntId);
-        const allClues: Clue[] = [];
-        for (const cs of clueSets) {
-          const list = await clueDAO.getCluesByClueSet(cs.id);
-          allClues.push(...list.filter((c) => (c.clueType ?? "CLUE") === "ROAD_BLOCK"));
-        }
-        setRoadBlockClues(allClues);
-      } catch {
-        setRoadBlockClues([]);
-      }
 
       // Load clue information for each submission
       if (Array.isArray(loadedSubmissions) && loadedSubmissions.length > 0) {
@@ -182,9 +165,9 @@ function TeamAnswersContent() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error || "Failed to load data"}</p>
-        <Link href={backLink}>
+        {!!backLink && (<Link href={backLink}>
           <Button>Back</Button>
-        </Link>
+        </Link>)}
       </div>
     );
   }
@@ -193,9 +176,9 @@ function TeamAnswersContent() {
     <div className="p-4 min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-100 to-rose-100">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex flex-col gap-4">
-          <Link href={backLink} className="text-gray-600 hover:text-gray-800 mb-2 inline-block">
+          {!!backLink && (<Link href={backLink} className="text-gray-600 hover:text-gray-800 mb-2 inline-block">
             ← Back to Hunt
-          </Link>
+          </Link>)}
           <div>
             <h1 className="text-xl font-black bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-500 bg-clip-text text-transparent">
               {hunt.name} - Answers
