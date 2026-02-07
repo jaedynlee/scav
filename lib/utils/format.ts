@@ -21,3 +21,10 @@ export function formatTimeHMS(ms: number): string {
   const s = totalSec % 60;
   return `${h.toString().padStart(2, '0')}:${Math.abs(m).toString().padStart(2, '0')}:${Math.abs(s).toString().padStart(2, '0')}`;
 }
+
+export function formatTimeHM(ms: number): string {
+  const totalMin = Math.floor(ms / 60_000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${h.toString().padStart(2, '0')}:${Math.abs(m).toString().padStart(2, '0')}`;
+}

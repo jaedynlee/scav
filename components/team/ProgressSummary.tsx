@@ -1,4 +1,4 @@
-import { formatTimeHMS } from "@/lib/utils/format";
+import { formatTimeHM } from "@/lib/utils/format";
 import ProgressBar from "../shared/ProgressBar";
 import { TeamProgress } from "@/lib/models/types";
 import { useEffect, useMemo, useState } from "react";
@@ -93,7 +93,7 @@ export function ProgressSummary({ progress }: { progress: TeamProgress }) {
                         <div>
                             <span className="text-gray-600 font-medium">Time elapsed:</span>{" "}
                             <span className={timeSavedMinutes !== 0 ? "font-semibold text-gray-900" : "font-semibold text-emerald-700"}>
-                                {formatTimeHMS(elapsedTimeMs)}
+                                {formatTimeHM(elapsedTimeMs)}
                             </span>
                         </div>
                     )}
@@ -105,14 +105,14 @@ export function ProgressSummary({ progress }: { progress: TeamProgress }) {
                             </span>
                         </div>
                     )}
-                    {/* {timeSavedMinutes !== 0 && elapsedTimeMs !== 0 && (
+                    {timeSavedMinutes !== 0 && elapsedTimeMs !== 0 && (
                         <div>
                             <span className="text-gray-600 font-medium">Effective time:</span>{" "}
                             <span className="font-semibold text-emerald-700">
-                                {formatTimeHMS(elapsedTimeMs - (Math.abs(timeSavedMinutes) * 60_000))}
+                                {formatTimeHM(Math.max(0, elapsedTimeMs - (Math.abs(timeSavedMinutes) * 60_000)))}
                             </span>
                         </div>
-                    )} */}
+                    )}
                 </div>
             )}
         </div>
