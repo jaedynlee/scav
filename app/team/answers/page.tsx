@@ -198,9 +198,9 @@ function TeamAnswersContent() {
           </Link>
           <div>
             <h1 className="text-xl font-black bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-500 bg-clip-text text-transparent">
-              {team.name} - Answers
+              {hunt.name} - Answers
             </h1>
-            <p className="text-gray-600 mt-1 font-bold">{hunt.name}</p>
+            <p className="text-gray-600 mt-1 font-bold">{team.name}</p>
           </div>
         </div>
 

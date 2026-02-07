@@ -297,7 +297,7 @@ function TeamHuntContent() {
                   href={`/team/answers?teamId=${team.id}&backLink=${encodeURIComponent(`/team?teamId=${team.id}`)}`}
                   className="text-xs font-black text-violet-700 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border-2 border-violet-200 shadow-md hover:bg-violet-50 transition-colors cursor-pointer"
                 >
-                  {team.name}
+                  History
                 </Link>
               </div>
             </div>
