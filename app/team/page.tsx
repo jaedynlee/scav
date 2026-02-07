@@ -268,6 +268,9 @@ function TeamHuntContent() {
             <p className="text-xl text-gray-800 font-black">
               <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">{team.name}</span> crushed it 🔥
             </p>
+            <p className="text-xl text-gray-800 font-black">
+              Come join us inside!
+            </p>
             <div className="pt-4">
               <Link href="/">
                 <Button fullWidth className="text-lg py-4">
