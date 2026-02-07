@@ -8,11 +8,12 @@ import MediaUpload from "./MediaUpload";
 interface AnswerInputProps {
   onSubmit: (answer: string, mediaUrls?: string[]) => void;
   disabled?: boolean;
+  isSubmitting?: boolean;
   allowsMedia?: boolean;
   clueHasTextAnswer?: boolean;
 }
 
-export default function AnswerInput({ onSubmit, disabled, allowsMedia = false, clueHasTextAnswer = true }: AnswerInputProps) {
+export default function AnswerInput({ onSubmit, disabled, isSubmitting = false, allowsMedia = false, clueHasTextAnswer = true }: AnswerInputProps) {
   const [answer, setAnswer] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [error, setError] = useState("");
@@ -79,7 +80,30 @@ export default function AnswerInput({ onSubmit, disabled, allowsMedia = false, c
         fullWidth
         disabled={disabled}
       >
-        🚀 Submit Answer
+        {isSubmitting ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            <svg
+              className="animate-spin h-5 w-5 shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="32 24"
+              />
+            </svg>
+            Submitting…
+          </span>
+        ) : (
+          "🚀 Submit Answer"
+        )}
       </Button>
 
       {error && (

@@ -367,6 +367,7 @@ function TeamHuntContent() {
             <AnswerInput
               onSubmit={handleAnswerSubmit}
               disabled={submitting}
+              isSubmitting={submitting}
               allowsMedia={(viewingRoadBlock ?? viewingExpressPass ?? currentClue).allowsMedia}
               clueHasTextAnswer={(viewingRoadBlock ?? viewingExpressPass ?? currentClue).hasTextAnswer}
             />
